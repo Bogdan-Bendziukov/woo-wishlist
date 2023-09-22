@@ -1,0 +1,21 @@
+.woo-wishlist-button {
+    display: inline-block;
+    line-height: 1;
+    margin-inline-start: 0.5em;
+    color: #6d6d6d;
+    opacity: .6;
+
+    &:hover {
+        color: #ec0a68;
+        opacity: 1;
+    }
+    &.added {
+        color: #ec0a68;
+        opacity: 1;
+
+        &:hover {
+            opacity: 1;
+            color: #ec0a68;
+        }
+    }
+}
