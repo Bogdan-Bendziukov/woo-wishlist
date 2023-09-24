@@ -1,0 +1,17 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../themes/storefront"
+		},
+		{
+			"path": "../woocommerce"
+		},
+		{
+			"path": "../yith-woocommerce-wishlist"
+		}
+	],
+	"settings": {}
+}

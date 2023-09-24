@@ -59,6 +59,13 @@ function woo_wishlist_enqueue_scripts() {
     wp_enqueue_style( 'woo-wishlist', plugin_dir_url( __FILE__ ) . 'assets/css/woo-wishlist.css', array(), '1.0.0' );
     wp_enqueue_script( 'woo-wishlist', plugin_dir_url( __FILE__ ) . 'assets/js/woo-wishlist.js', array('jquery'), '1.0.0', true );
     wp_add_inline_style( 'woo-wishlist', woo_wishlist_inline_styles() );
+
+    wp_localize_script( 'woo-wishlist', 'woo_wishlist',
+		array(
+			'ajax_url' => admin_url('admin-ajax.php'),
+            'wishlist_nonce' => wp_create_nonce('woo_wishlist_nonce')
+		)
+	);
 }
 
 /**

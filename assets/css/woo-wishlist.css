@@ -1,3 +1,11 @@
+@keyframes woo-wishlist-loading {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
 .woo-wishlist-button {
     display: inline-block;
     line-height: 1;
@@ -16,6 +24,14 @@
         &:hover {
             opacity: 1;
             color: #ec0a68;
+        }
+    }
+    &.loading {
+        animation: woo-wishlist-loading 1s linear infinite;
+        pointer-events: none;
+
+        &:focus {
+            outline: none;
         }
     }
 }
