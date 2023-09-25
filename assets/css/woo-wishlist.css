@@ -35,3 +35,48 @@
         }
     }
 }
+.woo-wishlist-link {
+    position: relative;
+
+    & .woo-wishlist-count {
+        position: absolute;
+        top: -0.5em;
+        right: -1em;
+        border-radius: 50%;
+        background-color: rgba(109, 109, 109, .6);
+        color: #fff;
+        line-height: 1;
+        text-align: center;
+        font-size: .8em;
+        padding: 0.25em;
+        width: 1.5em;
+        height: 1.5em;
+        box-sizing: border-box;
+    }
+}
+.site-header .woo-wishlist-link {
+    display: none;
+}
+@media (min-width: 768px) {
+    .site-header .woo-wishlist-link {
+        display: inline-block;
+        translate: -250% 100%;
+        position: absolute;
+    }
+}
+.storefront-handheld-footer-bar .woo-wishlist-link {
+    text-indent: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+
+    & .woo-wishlist-icon {
+        font-size: 1.5em;
+    }
+    & .woo-wishlist-count {
+        top: auto;
+        right: auto;
+        translate: 50% -50%;
+    }
+}

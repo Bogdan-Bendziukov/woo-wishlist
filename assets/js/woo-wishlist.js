@@ -46,6 +46,13 @@ jQuery(document).ready(function ($) {
                         response.data.btn_title
                     );
                     btn.attr("title", response.data.btn_title);
+
+                    if (response.data.fragments) {
+                        $.each(response.data.fragments, function (key, value) {
+                            $(key).replaceWith(value);
+                        });
+                        $( document.body ).trigger( 'woo_wishlist_fragments_loaded' );
+                    }
                 } else {
                     alert(response.data.message);
                 }
