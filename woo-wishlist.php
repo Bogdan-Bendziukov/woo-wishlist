@@ -63,7 +63,10 @@ function woo_wishlist_enqueue_scripts() {
     wp_localize_script( 'woo-wishlist', 'woo_wishlist',
 		array(
 			'ajax_url' => admin_url('admin-ajax.php'),
-            'wishlist_nonce' => wp_create_nonce('woo_wishlist_nonce')
+            'wishlist_nonce' => wp_create_nonce('woo_wishlist_nonce'),
+            'variation_required_message' => apply_filters('woo_wishlist_variation_required_message', __('Please choose product options before adding to wishlist', 'woo-wishlist')),
+            'add_to_wishlist_message' => apply_filters('woo_wishlist_add_to_wishlist_message', __('Add to wishlist', 'woo-wishlist')),
+            'remove_from_wishlist_message' => apply_filters('woo_wishlist_remove_from_wishlist_message', __('Remove from wishlist', 'woo-wishlist')),
 		)
 	);
 }

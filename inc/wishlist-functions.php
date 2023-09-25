@@ -19,15 +19,32 @@ if ( !function_exists( 'woo_wishlist_add_button' ) ) {
     function woo_wishlist_add_button() {
         global $product;
 
-        if ( ! $product->is_type( 'simple' ) ) {
+        if ( ! is_product() && ! $product->is_type( 'simple' ) ) { // Hide wishlist button for variable products in loop
             return;
         }
 
         $product_id = $product->get_id();
-        $is_in_wishlist = woo_wishlist_is_in_wishlist( $product_id );
+        $is_variable_product = $product->is_type( 'variable' );
+        $is_in_wishlist = $is_variable_product ? false : woo_wishlist_is_in_wishlist( $product_id );
         $title = $is_in_wishlist ? __('Remove from wishlist', 'woo-wishlist') : __('Add to wishlist', 'woo-wishlist');
+        $attrs = array(
+            'href' => '#',
+            'data-product-id' => $product_id,
+            'title' => $title,
+            'class' => 'woo-wishlist-button '.($is_in_wishlist ? "added" : ""),
+        );
+        if ( $is_variable_product ) {
+            $attrs['data-variation-id'] = '0';
+            $attrs['data-variations-in-wishlist'] = implode(",", woo_wishlist_get_variations_in_wishlist($product_id));
+            $attrs['class'] .= ' variation-selection-needed';
+        }
+
+        $attrs = apply_filters( 'woo_wishlist_button_attrs', $attrs, $product_id );
+
+        $attrs = array_map( function($v, $k) { return $k.'="'.$v.'"'; }, $attrs, array_keys($attrs) );
+        $attrs = implode(' ', $attrs);
         $icon = '<i class="woo-wishlist-icon fas fa-heart"></i>';
-        $button = '<a href="#" title="'.$title.'" class="woo-wishlist-button '.($is_in_wishlist ? "added" : "").'" data-product-id="'.$product_id.'">'.$icon.'</a>';
+        $button = '<a '.$attrs.'>'.$icon.'</a>';
 
         echo apply_filters( 'woo_wishlist_button', $button, $product_id );
     }
@@ -40,7 +57,15 @@ if ( !function_exists( 'woo_wishlist_add_to_wishlist' ) ) {
      * Add product to wishlist
      */
     function woo_wishlist_add_to_wishlist() {
-        if ( !isset( $_POST['product_id'] ) ) {
+        if ( !isset( $_POST['product_id'] ) || wc_get_product( $_POST['product_id'] ) === false ) {
+            exit;
+        }
+
+        if ( isset( $_POST['variation_id'] ) && ( $_POST['variation_id'] === '0' || wc_get_product( $_POST['variation_id'] ) === false ) ) {
+            $response = array(
+                'message' => __('This variation is unavailable', 'woo-wishlist'),
+            );
+            echo wp_send_json_error($response);
             exit;
         }
 
@@ -57,23 +82,25 @@ if ( !function_exists( 'woo_wishlist_add_to_wishlist' ) ) {
         }
 
         $product_id = absint( $_POST['product_id'] );
+        $variation_id = isset($_POST['variation_id']) ? absint( $_POST['variation_id'] ) : 0;
+        $product_to_add = $variation_id ? $product_id.'-'.$variation_id : $product_id;
         $user_id = get_current_user_id();
-        $is_in_wishlist = woo_wishlist_is_in_wishlist( $product_id );
+        $is_in_wishlist = woo_wishlist_is_in_wishlist( $product_id, $variation_id );
         $wishlist = woo_wishlist_get_wishlist();
         $result = false;
         $action = '';
 
         if ( $is_in_wishlist === false ) {
             if ( !empty($wishlist) ) {
-                $wishlist[] = $product_id;
+                $wishlist[] = $product_to_add;
                 $result = update_user_meta( $user_id, 'woo_wishlist', $wishlist );
                 $action = 'updated';
             } else {
-                $result = add_user_meta( $user_id, 'woo_wishlist', array($product_id) );
+                $result = add_user_meta( $user_id, 'woo_wishlist', array($product_to_add) );
                 $action = 'added';
             }
         } else {
-            if (($key = array_search($product_id, $wishlist)) !== false) {
+            if (($key = array_search($product_to_add, $wishlist)) !== false) {
                 unset($wishlist[$key]);
             }
             $result = update_user_meta( $user_id, 'woo_wishlist', $wishlist );
@@ -107,9 +134,13 @@ if ( !function_exists( 'woo_wishlist_add_to_wishlist' ) ) {
                     'fragments' => $fragments,
                 );
             }
+            if ( $variation_id ) {
+                $response['variations_in_wishlist'] = woo_wishlist_get_variations_in_wishlist($product_id);
+            }
             echo wp_send_json_success($response);
         } else {
             $response = array(
+                'action' => $action,
                 'result' => $result,
                 'message' => __('Error occured', 'woo-wishlist'),
             );
@@ -124,7 +155,7 @@ if ( !function_exists( 'woo_wishlist_is_in_wishlist' ) ) {
     /**
      * Check if product is in wishlist
      */
-    function woo_wishlist_is_in_wishlist( $product_id ) {
+    function woo_wishlist_is_in_wishlist( $product_id, $variation_id = 0 ) {
         if ( !is_user_logged_in() ) {
             return false;
         }
@@ -134,7 +165,9 @@ if ( !function_exists( 'woo_wishlist_is_in_wishlist' ) ) {
         
         $wishlist = is_array( $wishlist ) ? $wishlist : array();
 
-        if ( in_array( $product_id, $wishlist ) ) {
+        $product_to_check = $variation_id ? $product_id.'-'.$variation_id : $product_id;
+
+        if ( in_array( $product_to_check, $wishlist ) ) {
             return true;
         } else {
             return false;
@@ -157,6 +190,36 @@ if ( !function_exists( 'woo_wishlist_get_wishlist' ) ) {
         $wishlist = is_array( $wishlist ) ? $wishlist : array();
 
         return $wishlist;
+    }
+}
+
+if ( !function_exists( 'woo_wishlist_get_variations_in_wishlist' ) ) {
+    /**
+     * Get variations in wishlist for product 
+     */
+    function woo_wishlist_get_variations_in_wishlist($product_id) {
+        if ( !is_user_logged_in() ) {
+            return false;
+        }
+
+        $user_id = get_current_user_id();
+        $wishlist = get_user_meta( $user_id, 'woo_wishlist', true );
+        
+        $wishlist = is_array( $wishlist ) ? $wishlist : array();
+
+        if ( empty($wishlist) ) {
+            return false;
+        }
+
+        $variations_in_wishlist = array();
+        foreach ($wishlist as $product) {
+            $product = explode('-', $product);
+            if ( $product[0] == $product_id ) {
+                $variations_in_wishlist[] = $product[1];
+            }
+        }
+
+        return $variations_in_wishlist;
     }
 }
 
