@@ -83,3 +83,9 @@
         translate: 50% -50%;
     }
 }
+
+.woocommerce-MyAccount-navigation ul li.woocommerce-MyAccount-navigation-link--woo_wishlist a::before {
+    content: "\f004";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+}

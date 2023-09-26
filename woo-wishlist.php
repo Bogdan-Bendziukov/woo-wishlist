@@ -20,6 +20,8 @@ if ( ! defined( 'ABSPATH' ) ) {
     die;
 }
 
+define( 'WOO_WISHLIST_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
+
 add_action('admin_notices', 'woo_wishlist_admin_notice');
 /**
  * Add notices to wp-admin if no WooCommerce/Storefront activated
@@ -102,4 +104,30 @@ function woo_wishlist_inline_styles() {
     return apply_filters( 'woo_wishlist_inline_styles', $styles );
 }
 
-require_once plugin_dir_path( __FILE__ ) . 'inc/wishlist-functions.php';
+register_activation_hook( __FILE__, 'woo_wishlist_activate' );
+/**
+ * Activation hook
+ */
+function woo_wishlist_activate() {
+
+    // Create Wishlist page
+    wc_create_page(
+        sanitize_title_with_dashes( _x( 'woo_wishlist', 'page_slug', 'save' ) ),
+        'woo_wishlist_page_id',
+        __( 'Woo Wishlist', 'woo-wishlist' ),
+        '<!-- wp:shortcode -->[woo_wishlist]<!-- /wp:shortcode -->'
+    );
+}
+
+add_action('template_redirect', 'woo_wishlist_template_redirect');
+/**
+ * Redirect to Login page if user on wishlist page
+ */
+function woo_wishlist_template_redirect() {
+    if ( is_page( 'woo_wishlist' ) && !is_user_logged_in() ) {
+        wp_redirect( wp_login_url( get_permalink() ) );
+        exit;
+    }
+}
+
+require_once WOO_WISHLIST_PLUGIN_PATH . 'inc/wishlist-functions.php';

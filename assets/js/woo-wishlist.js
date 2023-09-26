@@ -8,14 +8,9 @@ jQuery(document).ready(function ($) {
 
     // Update variation ID on variation selection
     $('.single_variation_wrap').on('show_variation', function (event, variation) {
-        console.log(variation);
-
         let variationID = variation.variation_id.toString();
         let $btn = $('.single_variation_wrap .woo-wishlist-button');
         let variationsInWishlist = $btn.attr('data-variations-in-wishlist').toString().split(',');
-
-        console.log(variationsInWishlist);
-        console.log(variationID);
 
         $btn.attr('data-variation-id', variationID);
         $btn.removeClass('variation-selection-needed');
@@ -59,7 +54,6 @@ jQuery(document).ready(function ($) {
         };
 
         if (hasVariation) {
-            console.log(variationID);
             if (variationID) {
                 data.variation_id = variationID;
             } else {
@@ -67,8 +61,6 @@ jQuery(document).ready(function ($) {
                 return;
             }
         }
-
-        console.log(variationID);
 
         $.ajax({
             url: woo_wishlist.ajax_url,
@@ -78,14 +70,15 @@ jQuery(document).ready(function ($) {
                 btn.addClass("loading");
                 icon.removeClass("fa-heart");
                 icon.addClass("fa-spinner");
-                console.log(data);
+                
+                //console.log(data);
             },
             success: function (response) {
                 btn.removeClass("loading");
                 icon.addClass("fa-heart");
                 icon.removeClass("fa-spinner");
 
-                console.log(response);
+                //console.log(response);
 
                 if (response.success) {
                     if (response.data.action === "added" || response.data.action === "updated") {
