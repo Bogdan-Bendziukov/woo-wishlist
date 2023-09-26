@@ -26,12 +26,15 @@ if ( empty($wishlist) ) {
 
     $loop = new WP_Query( $args );
 
-    if ( $loop->have_posts() ) {
+    woo_wishlist_setup_loop( $loop );
+
+    if ( $loop->have_posts() ) :
         /**
          * Hook: woo_wishlist_before_wishlist.
          * 
          * @hooked storefront_sorting_wrapper - 5
-         * @hooked woo_wishlist_pagination - 10
+         * @hooked woo_wishlist_add_all_products_to_cart_button - 10
+         * @hooked woocommerce_pagination - 20
          * @hooked storefront_sorting_wrapper_close - 90
          */
         do_action( 'woo_wishlist_before_wishlist', $loop ); 
@@ -44,8 +47,12 @@ if ( empty($wishlist) ) {
         
         woocommerce_product_loop_end();
 
+        /**
+         * Hook: woo_wishlist_after_wishlist.
+         */
         do_action( 'woo_wishlist_after_wishlist', $loop );
-    }
+    endif;
 
     wp_reset_postdata();
+    wc_reset_loop();
 ?>

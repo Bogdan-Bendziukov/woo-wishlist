@@ -89,3 +89,22 @@
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
 }
+
+.woo-wishlist-add-all-to-cart-button {
+    position: relative;
+    
+    &.loading {
+        pointer-events: none;
+
+        &::after {
+            content: "\f07a";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            display: inline-block;
+            animation: woo-wishlist-loading 1s linear infinite;
+        }
+        &:focus {
+            outline: none;
+        }
+    }
+}

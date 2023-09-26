@@ -5,6 +5,7 @@
 
 jQuery(document).ready(function ($) {
     let $wishlistBtn = $(".woo-wishlist-button");
+    let $addAllToCartBtn = $(".woo-wishlist-add-all-to-cart-button");
 
     // Update variation ID on variation selection
     $('.single_variation_wrap').on('show_variation', function (event, variation) {
@@ -101,6 +102,42 @@ jQuery(document).ready(function ($) {
                         );
                     }
 
+                    if (response.data.fragments) {
+                        $.each(response.data.fragments, function (key, value) {
+                            $(key).replaceWith(value);
+                        });
+                        $(document.body).trigger('woo_wishlist_fragments_loaded');
+                    }
+                } else {
+                    if (response.data.message) {
+                        alert(response.data.message);
+                    }
+                }
+
+            },
+        });
+    });
+
+    $addAllToCartBtn.on("click", function (e) {
+        const products = $(this).data('products');
+        let data = {
+            action: "woo_wishlist_add_all_to_cart",
+            products: products,
+            wishlist_nonce: woo_wishlist.wishlist_nonce,
+        };
+
+        $.ajax({
+            url: woo_wishlist.ajax_url,
+            type: "POST",
+            data: data,
+            beforeSend: function () {
+                $addAllToCartBtn.addClass("loading");
+            },
+            success: function (response) {
+                $addAllToCartBtn.removeClass("loading");
+
+                if (response.success) {
+                    console.log(response.data);
                     if (response.data.fragments) {
                         $.each(response.data.fragments, function (key, value) {
                             $(key).replaceWith(value);

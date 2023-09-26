@@ -19,24 +19,44 @@ if ( !function_exists( 'woo_wishlist_add_button' ) ) {
     function woo_wishlist_add_button() {
         global $product;
 
-        if ( ! is_product() && ! $product->is_type( 'simple' ) ) { // Hide wishlist button for variable products in loop
+        if ( ! woo_wishlist_is_wishlist_page() && ! is_product() && ! $product->is_type( 'simple' ) ) { // Hide wishlist button for variable products in loop
             return;
         }
 
-        $product_id = $product->get_id();
-        $is_variable_product = $product->is_type( 'variable' );
-        $is_in_wishlist = $is_variable_product ? false : woo_wishlist_is_in_wishlist( $product_id );
-        $title = $is_in_wishlist ? __('Remove from wishlist', 'woo-wishlist') : __('Add to wishlist', 'woo-wishlist');
+        $is_variable_product = $product->is_type( 'variable' ); // check if product is variable (on single product page or in shop loop)
+        $is_product_variation = $product->post_type === 'product_variation'; // check if product is variation (on wishlist page)
+        $product_id = $product->get_id();  
+        $is_in_wishlist = false;
+
+        if ( $is_variable_product === false ) {
+            if ($is_product_variation) { // check if product variation is in wishlist
+                $is_in_wishlist = woo_wishlist_is_in_wishlist( $product->get_parent_id(), $product_id );
+            } else {
+                $is_in_wishlist = woo_wishlist_is_in_wishlist( $product_id );
+            }
+        }
+
+        $title = $is_in_wishlist ? 
+            apply_filters('woo_wishlist_remove_from_wishlist_message', __('Remove from wishlist', 'woo-wishlist')) 
+            : 
+            apply_filters('woo_wishlist_add_to_wishlist_message', __('Add to wishlist', 'woo-wishlist'));
+
         $attrs = array(
             'href' => '#',
             'data-product-id' => $product_id,
             'title' => $title,
             'class' => 'woo-wishlist-button '.($is_in_wishlist ? "added" : ""),
         );
+
         if ( $is_variable_product ) {
             $attrs['data-variation-id'] = '0';
             $attrs['data-variations-in-wishlist'] = implode(",", woo_wishlist_get_variations_in_wishlist($product_id));
             $attrs['class'] .= ' variation-selection-needed';
+        }
+
+        if ( $is_product_variation ) {
+            $attrs['data-product-id'] = $product->get_parent_id();
+            $attrs['data-variation-id'] = $product_id;
         }
 
         $attrs = apply_filters( 'woo_wishlist_button_attrs', $attrs, $product_id );
@@ -312,6 +332,7 @@ if (!function_exists('woo_wishlist_shortcode')) {
 
         $wishlist = woo_wishlist_get_wishlist();
         
+        // allow to override template
         $template = locate_template( 'woo-wishlist/wishlist.php', false, false, $wishlist );
 
         if ( !$template ) {
@@ -322,8 +343,14 @@ if (!function_exists('woo_wishlist_shortcode')) {
         $rows         = absint( get_option( 'woocommerce_catalog_rows', 4 ) );
         $per_page     = apply_filters( 'loop_shop_per_page', $columns * $rows );
         $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
+
+        // find variations in wishlist and extract variation IDs
+        $wishlist = array_map( function($v) {
+            return count(explode('-', $v, 2)) > 1 ? explode('-', $v, 2)[1] : $v;
+        }, $wishlist );
+
         $args = array(
-            'post_type' => 'product',
+            'post_type' => array('product', 'product_variation'),
             'posts_per_page' => $per_page,
             'post__in' => $wishlist,
             'paged' => $paged,
@@ -339,38 +366,115 @@ if (!function_exists('woo_wishlist_shortcode')) {
     }
 }
 
-if (!function_exists('woo_wishlist_pagination')) {
-    add_action( 'woo_wishlist_before_wishlist', 'woo_wishlist_pagination', 10 );
+if (!function_exists('woo_wishlist_setup_loop')) {
     /**
-     * Add pagination to wishlist page
+     * Setup loop for wishlist
      */
-    function woo_wishlist_pagination($loop) {
-        $total_pages = $loop->max_num_pages;
-        
-        if ( $total_pages <= 1 ) {
-            return;
-        }
-
-        $args = array(
-            'base'         => esc_url_raw( str_replace( 999999999, '%#%', remove_query_arg( 'add-to-cart', get_pagenum_link( 999999999, false ) ) ) ),
-            'format'       => '',
-            'total'        => $total_pages,
-            'current'      => max(1, get_query_var('paged')),
-            'show_all'     => false,
-            'end_size'     => 1,
-            'mid_size'     => 2,
-            'prev_next'    => true,
-            'prev_text'    => __('&laquo; Previous', 'woo-wishlist'),
-            'next_text'    => __('Next &raquo;', 'woo-wishlist'),
-            'type'         => 'plain',
-            'add_args'     => false,
-            'add_fragment' => '',
+    function woo_wishlist_setup_loop($loop) {
+        wc_setup_loop(
+            array(
+                'name' => 'woo_wishlist_loop',
+                'is_shortcode' => false,
+                'is_search' => false,
+                'is_paginated' => true,
+                'total' => $loop->found_posts,
+                'total_pages' => $loop->max_num_pages,
+                'per_page' => $loop->get( 'posts_per_page' ),
+                'current_page' => max( 1, $loop->get( 'paged', 1 ) ),
+            )
         );
-        $args = apply_filters( 'woo_wishlist_pagination_args', $args );
-
-        wc_get_template( 'loop/pagination.php', $args );
     }
 }
 
+// Add pagination and wrapper to wishlist template
 add_action('woo_wishlist_before_wishlist', 'storefront_sorting_wrapper', 5);
+add_action('woo_wishlist_before_wishlist', 'woocommerce_pagination', 20 );
 add_action('woo_wishlist_before_wishlist', 'storefront_sorting_wrapper_close', 90);
+
+if (!function_exists('woo_wishlist_is_wishlist_page')) {
+    /**
+     * Check if current page is wishlist page
+     */
+    function woo_wishlist_is_wishlist_page() {
+        if ( is_page( get_option('woo_wishlist_page_id') ) ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+
+if (!function_exists('woo_wishlist_add_all_products_to_cart_button')) {
+    add_action('woo_wishlist_before_wishlist', 'woo_wishlist_add_all_products_to_cart_button', 10);
+    /**
+     * Add all products to cart button
+     */
+    function woo_wishlist_add_all_products_to_cart_button() {
+        $wishlist = woo_wishlist_get_wishlist();
+        $products = implode(",", $wishlist);
+        $text = __('Add all to cart', 'woo-wishlist');
+        $button = '<a href="#" class="button woo-wishlist-add-all-to-cart-button" data-products="'.$products.'">'.$text.'</a>';
+        echo apply_filters( 'woo_wishlist_add_all_products_to_cart_button', $button, $wishlist );
+    }
+}
+
+if ( !function_exists( 'woo_wishlist_add_all_to_cart' ) ) {
+    add_action( 'wp_ajax_woo_wishlist_add_all_to_cart', 'woo_wishlist_add_all_to_cart' );
+    add_action( 'wp_ajax_nopriv_woo_wishlist_add_all_to_cart', 'woo_wishlist_add_all_to_cart' );
+    /**
+     * Add all products to cart
+     */
+    function woo_wishlist_add_all_to_cart() {
+        if ( !isset( $_POST['products'] ) ) {
+            exit;
+        }
+
+        if ( !isset( $_POST['wishlist_nonce'] ) || !wp_verify_nonce( $_POST['wishlist_nonce'], 'woo_wishlist_nonce' ) ) {
+            exit;
+        }
+
+        $products = explode(",", $_POST['products']);
+        $cart = WC()->cart;
+
+        foreach ($products as $product) {
+            $product = explode('-', $product, 2);
+            $product_id = $product[0];
+            $variation_id = isset($product[1]) ? $product[1] : 0;
+            $quantity = 1;
+            $cart_item_data = array();
+            $variation = array();
+            $product_cart_id = $variation_id ? 
+                $cart->generate_cart_id( $product_id, $variation_id, /*array( 'attribute_pa_color' => 'blue', 'attribute_logo' => 'Yes' )*/ ) : 
+                $cart->generate_cart_id( $product_id );
+
+            if ( $variation_id ) {
+                $variation = array(
+                    'variation_id' => $variation_id,
+                    'variation' => array(),
+                    'variation_description' => '',
+                );
+            }
+
+            if( ! $cart->find_product_in_cart( $product_cart_id ) ){
+                $cart->add_to_cart( $product_id, $quantity, $variation_id, $variation, $cart_item_data );
+            }
+        }
+
+        // update cart widget
+        $fragments = apply_filters(
+            'woocommerce_add_to_cart_fragments',
+            array(
+                'a.cart-contents' => '', // fragments added in `storefront_cart_link_fragment` function
+            )
+        );
+
+        $response = array(
+            'message' => __('Products added to cart', 'woo-wishlist'),
+            'fragments' => $fragments,
+        );
+        echo wp_send_json_success($response);
+        
+
+        exit;
+    }
+}
