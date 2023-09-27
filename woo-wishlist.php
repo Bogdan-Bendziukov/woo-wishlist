@@ -112,7 +112,7 @@ function woo_wishlist_activate() {
 
     // Create Wishlist page
     wc_create_page(
-        sanitize_title_with_dashes( _x( 'woo_wishlist', 'page_slug', 'save' ) ),
+        sanitize_title_with_dashes( _x( 'woo wishlist', 'page_slug', 'save' ) ),
         'woo_wishlist_page_id',
         __( 'Woo Wishlist', 'woo-wishlist' ),
         '<!-- wp:shortcode -->[woo_wishlist]<!-- /wp:shortcode -->'
