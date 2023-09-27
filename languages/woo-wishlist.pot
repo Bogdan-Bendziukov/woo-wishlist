@@ -1,0 +1,104 @@
+# Copyright (C) 2023 Bogdan Bendziukov
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Woo Wishlist 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woo-wishlist\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2023-09-27T19:27:58+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.6.0\n"
+"X-Domain: woo-wishlist\n"
+
+#. Plugin Name of the plugin
+#: woo-wishlist.php:117
+msgid "Woo Wishlist"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://github.com/Bogdan-Bendziukov/woo-wishlist"
+msgstr ""
+
+#. Description of the plugin
+msgid "Adds a wishlist feature to a Wordpress e-commerce website that uses the WooCommerce plugin and the Storefront theme"
+msgstr ""
+
+#. Author of the plugin
+msgid "Bogdan Bendziukov"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://bogdan.kyiv.ua/"
+msgstr ""
+
+#: inc/wishlist-functions.php:40
+#: inc/wishlist-functions.php:144
+#: woo-wishlist.php:71
+msgid "Remove from wishlist"
+msgstr ""
+
+#: inc/wishlist-functions.php:42
+#: inc/wishlist-functions.php:153
+#: woo-wishlist.php:70
+msgid "Add to wishlist"
+msgstr ""
+
+#: inc/wishlist-functions.php:86
+msgid "This variation is unavailable"
+msgstr ""
+
+#: inc/wishlist-functions.php:98
+msgid "You must log in to add items to wishlist!"
+msgstr ""
+
+#: inc/wishlist-functions.php:143
+msgid "Product added to wishlist"
+msgstr ""
+
+#: inc/wishlist-functions.php:152
+msgid "Product removed from wishlist"
+msgstr ""
+
+#: inc/wishlist-functions.php:166
+msgid "Error occured"
+msgstr ""
+
+#: inc/wishlist-functions.php:277
+msgid "Go to Wishlist"
+msgstr ""
+
+#: inc/wishlist-functions.php:329
+msgid "Wishlist"
+msgstr ""
+
+#: inc/wishlist-functions.php:351
+msgid "You must log in to view your wishlist!"
+msgstr ""
+
+#: inc/wishlist-functions.php:438
+msgid "Add all to cart"
+msgstr ""
+
+#: inc/wishlist-functions.php:499
+msgid "Products added to cart"
+msgstr ""
+
+#: inc/wishlist-functions.php:538
+msgid "Your wishlist is empty."
+msgstr ""
+
+#: woo-wishlist.php:36
+msgid "Please install and activate <a href=\"%1$s\" target=\"_blank\">WooCommerce</a> to use Woo Wishlist plugin."
+msgstr ""
+
+#: woo-wishlist.php:42
+msgid "Please install and activate <a href=\"%1$s\" target=\"_blank\">Storefront</a> theme to use Woo Wishlist plugin."
+msgstr ""
+
+#: woo-wishlist.php:69
+msgid "Please choose product options before adding to wishlist"
+msgstr ""
