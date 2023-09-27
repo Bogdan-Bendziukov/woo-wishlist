@@ -8,7 +8,7 @@ The Woo Wishlist WordPress plugin is a powerful and user-friendly tool designed 
 
 To install the Woo Wishlist WordPress plugin, follow these simple steps:
 
-1. **Download the Plugin**: Download the plugin zip file from [WordPress.org](https://wordpress.org/plugins/woo-wishlist/) or your preferred source.
+1. **Download the Plugin**: Download the plugin zip file from [github.com](https://github.com/Bogdan-Bendziukov/woo-wishlist).
 
 2. **Install the Plugin**:
 
