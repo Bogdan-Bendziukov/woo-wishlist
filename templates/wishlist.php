@@ -17,15 +17,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( empty($wishlist) ) {
-    return '<p>'.__('Your wishlist is empty!', 'woo-wishlist').'</p>';
+    woo_wishlist_empty_wishlist_message();
+    return;
 }
 ?>
 
 <?php
-    
-
-    $loop = new WP_Query( $args );
-
     woo_wishlist_setup_loop( $loop );
 
     if ( $loop->have_posts() ) :

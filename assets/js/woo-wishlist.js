@@ -137,7 +137,9 @@ jQuery(document).ready(function ($) {
                 $addAllToCartBtn.removeClass("loading");
 
                 if (response.success) {
-                    console.log(response.data);
+                    //console.log(response.data);
+                    $addAllToCartBtn.text(response.data.message);
+
                     if (response.data.fragments) {
                         $.each(response.data.fragments, function (key, value) {
                             $(key).replaceWith(value);
