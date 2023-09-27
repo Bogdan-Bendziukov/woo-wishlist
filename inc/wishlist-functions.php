@@ -277,12 +277,13 @@ if ( !function_exists( 'woo_wishlist_link')) {
         $title = __('Go to Wishlist', 'woo-wishlist');
         $count = count($wishlist);
         $wishlist_count_text = '';
+        $wishlist_url = get_permalink( get_option('woo_wishlist_page_id') );
 
         if ( $count > 0 ) {
             $wishlist_count_text = '<span class="woo-wishlist-count">'.$count.'</span>';
         }
         
-        $button = '<a href="#" title="'.$title.'" class="woo-wishlist-link">'.$icon.$wishlist_count_text.'</a>';
+        $button = '<a href="'.$wishlist_url.'" title="'.$title.'" class="woo-wishlist-link">'.$icon.$wishlist_count_text.'</a>';
         
         echo apply_filters( 'woo_wishlist_link', $button, $wishlist );
     }
