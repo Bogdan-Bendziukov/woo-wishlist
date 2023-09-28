@@ -124,7 +124,7 @@ add_action('template_redirect', 'woo_wishlist_template_redirect');
  * Redirect to Login page if user on wishlist page
  */
 function woo_wishlist_template_redirect() {
-    if ( is_page( 'woo_wishlist' ) && !is_user_logged_in() ) {
+    if ( woo_wishlist_is_wishlist_page() && !is_user_logged_in() ) {
         wp_redirect( wp_login_url( get_permalink() ) );
         exit;
     }

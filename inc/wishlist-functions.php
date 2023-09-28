@@ -222,7 +222,7 @@ if ( !function_exists( 'woo_wishlist_get_wishlist' ) ) {
      */
     function woo_wishlist_get_wishlist() {
         if ( !is_user_logged_in() ) {
-            return false;
+            return array();
         }
 
         $user_id = get_current_user_id();
@@ -327,18 +327,21 @@ if (!function_exists('woo_wishlist_account_menu_item')) {
      * Add wishlist menu item to my account menu
      */
     function woo_wishlist_account_menu_item($items, $endpoints) {
-        $items['woo_wishlist'] = __('Wishlist', 'woo-wishlist');
+        $items['woo-wishlist'] = __('Wishlist', 'woo-wishlist');
         return $items;
     }
 }
 
 if (!function_exists('woo_wishlist_account_menu_item_endpoint')) {
-    add_action( 'init', 'woo_wishlist_account_menu_item_endpoint' );
+    add_filter( 'woocommerce_get_endpoint_url', 'woo_wishlist_account_menu_item_endpoint', 10, 4 );
     /**
      * Add wishlist endpoint to my account menu
      */
-    function woo_wishlist_account_menu_item_endpoint() {
-        add_rewrite_endpoint( 'woo_wishlist', EP_ROOT | EP_PAGES );
+    function woo_wishlist_account_menu_item_endpoint($url, $endpoint, $value, $permalink) {
+        if ( $endpoint === 'woo-wishlist' ) {
+            $url = get_permalink( get_option('woo_wishlist_page_id') );
+        }
+        return $url;
     }
 }
 
