@@ -125,7 +125,12 @@ add_action('template_redirect', 'woo_wishlist_template_redirect');
  */
 function woo_wishlist_template_redirect() {
     if ( woo_wishlist_is_wishlist_page() && !is_user_logged_in() ) {
-        wp_redirect( wp_login_url( get_permalink() ) );
+        $wc_account_page_id = get_option('woocommerce_myaccount_page_id');
+        if ( get_permalink( $wc_account_page_id ) ) {
+            wp_redirect( get_permalink( $wc_account_page_id ) );
+        } else {
+            wp_redirect( wp_login_url( get_permalink() ) );
+        }
         exit;
     }
 }
